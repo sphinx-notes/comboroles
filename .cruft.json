@@ -1,6 +1,6 @@
 {
-  "template": "https://github.com/sphinx-notes/template",
-  "commit": "93c85ed7fe6dc87e11ffd024b762a3c8c9a83a1b",
+  "template": "https://github.com/sphinx-notes/cookiecutter",
+  "commit": "0b7d8aa478b37114cef369a217bd1d463e369d37",
   "checkout": null,
   "context": {
     "cookiecutter": {
@@ -9,12 +9,12 @@
       "full_name": "sphinxnotes-comboroles",
       "author": "Shengyu Zhang",
       "description": "Sphinx extension for composing multiple roles",
-      "version": "0.1.0",
+      "version": "1.0.0a0",
       "github_owner": "sphinx-notes",
       "github_repo": "comboroles",
       "pypi_name": "sphinxnotes-comboroles",
       "pypi_owner": "SilverRainZ",
-      "_template": "https://github.com/sphinx-notes/template"
+      "_template": "https://github.com/sphinx-notes/cookiecutter"
     }
   },
   "directory": null

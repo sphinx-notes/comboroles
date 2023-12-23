@@ -139,8 +139,10 @@ extensions.append('comboroles')
 # DOG FOOD CONFIGURATION START
 
 comboroles_roles = {
-    'literal_emphasis_strong': ['literal', 'emphasis', 'strong'],
+    'strong_literal': ['strong', 'literal'],
+    'plain_literal': (['literal'], False),
     'parsed_literal': (['literal'], True),
+    'parsed_emphasis': (['emphasis'], True),
 }
 
 # DOG FOOD CONFIGURATION END

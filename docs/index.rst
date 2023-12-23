@@ -3,6 +3,8 @@
 
 .. include:: ../README.rst
 
+.. _intro:
+
 Introduction
 ============
 
@@ -10,37 +12,18 @@ Introduction
 
 The extension allows users to create roles composited by multiple roles.
 
-As we know, |rst| does not yet support `nested inline markups/roles`__,
-so text like ````***bold italic code***```` doesn't render as expected.
-With the extension, we can compose roles ``literal`` (code), ``emphasis``
-(italic), and ``strong`` (bold) to composite roles ``literal_emphasis_strong``,
-to achieve the same effect as nested inline roles:
+As we know, reStructuredText does not yet support `nested inline markups`__,
+so text like "bold code" or "italic link" doesn't render as expected.
+With the extension, we make nested inline markups possible by compositing roles:
 
-.. list-table::
-
-   * - ````***bold italic code***````
-     - ``***bold italic code***``
-     - ❌
-   * - ``:literal_emphasis_strong:`bold italic code```
-     - :literal_emphasis_strong:`bold italic code`
-     - ✔️
-
-.. warning::
-
-   Due to :ref:`internal-impl`, the extension can only composite simple roles
-   (such as `docutils' Standard Roles`__),
-   and may crash Sphinx when compositing complex roles,
-   so DO NOT report to Sphinx first if it crashes, report to here
-   :issue:`new` instead.
-
-.. |rst| image:: /_images/rst.png
-   :target: https://docutils.sourceforge.io/rst.html
-   :alt: reStructuredText
-   :height: 1em
-   :align: bottom
+========================================== ====================================== ==
+````**bold code**````                      ``**bold code**``                      ❌
+``:strong_literal:`bold code```            :strong_literal:`bold code`            ✔️
+``*https://example.com*``                  *https://example.com*                  ❌
+``:parsed_emphasis:`https://example.com``` :parsed_emphasis:`https://example.com` ✔️
+========================================== ====================================== ==
 
 __ https://docutils.sourceforge.io/FAQ.html#is-nested-inline-markup-possible
-__ https://docutils.sourceforge.io/docs/ref/rst/roles.html#standard-roles
 
 .. ADDITIONAL CONTENT END
 
@@ -73,16 +56,27 @@ Then, add the extension name to ``extensions`` configuration item in your conf.p
 
 .. ADDITIONAL CONTENT START
 
-TODO: cfg
+To create a "bold code" role that same as described in :ref:`intro`,
+Continue to add the following configuration, which tells the extension to
+composite roles :parsed_literal:`strong_` (markup: ``**foo**``) and
+:parsed_literal:`literal_` (markup: ````foo````) into a new role ``strong_literal``:
 
-.. list-table::
+.. code:: python
 
-   * - ``:literal_emphasis_strong:`Sphinx```
-     - :literal_emphasis_strong:`Sphinx`
-   * - ``:parsed_literal:`https://silverrainz.me```
-     - :parsed_literal:`https://silverrainz.me`
+   comboroles_roles = {
+       'strong_literal': ['strong', 'literal'],
+   }
+
+Then you can use it:
+
+=============================== ===========================
+``:strong_literal:`bold code``` :strong_literal:`bold code`
+=============================== ===========================
 
 See :doc:`usage` for more details.
+
+.. _strong: https://docutils.sourceforge.io/docs/ref/rst/roles.html#strong
+.. _literal: https://docutils.sourceforge.io/docs/ref/rst/roles.html#literal
 
 .. ADDITIONAL CONTENT END
 
@@ -93,6 +87,7 @@ Contents
    :caption: Contents
 
    usage
+   conf
    changelog
 
 The Sphinx Notes Project

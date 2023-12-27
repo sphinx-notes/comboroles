@@ -1,12 +1,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, cast
 
-from sphinx.util.docutils import SphinxRole 
-
-# Memo:
-#
-# https://docutils.sourceforge.io/FAQ.html#is-nested-inline-markup-possible
-# https://stackoverflow.com/questions/44829580/composing-roles-in-restructuredtext
+from sphinx.util.docutils import SphinxRole
 
 from docutils.nodes import Node, Inline, TextElement, Text, system_message
 from docutils.parsers.rst import roles
@@ -38,46 +33,73 @@ class CompositeRole(SphinxRole):
 
     def run(self) -> tuple[list[Node], list[system_message]]:
         nodes: list[TextElement] = []
-        reporter = self.inliner.reporter # type: ignore[attr-defined] 
 
         # Run all RoleFunction, collect the produced nodes.
-        for comp in reversed(self.components): 
-            ns, sysmsgs = comp(self.name, self.rawtext, self.text, self.lineno, self.inliner, self.options, self.content)
-            if len(sysmsgs) != 0:
-                return [], sysmsgs # once system_message is thrown, return
+        for comp in self.components:
+            reporter = self.inliner.reporter # type: ignore[attr-defined]
+            ns, msgs = comp(self.name, self.rawtext, self.text, self.lineno, self.inliner, self.options, self.content)
+
+            # The returned nodes should be exactly one TextElement and contains
+            # exactly one Text node as child, like this::
+            #
+            #   <TextElement>
+            #       <Text>
+            #
+            # So that it can be used as part of composite roles.
+            if len(msgs) != 0:
+                return [], msgs # once system_message is thrown, return
             if len(ns) != 1:
-                msg = reporter.error(f'role should returns exactly 1 nodes, but {len(ns)} found: {ns}', line=self.lineno)
+                msg = reporter.error(f'role should returns exactly 1 node, but {len(ns)} found: {ns}', line=self.lineno)
                 return [], [msg]
             if not isinstance(ns[0], (Inline, TextElement)):
                 msg = reporter.error(f'node {ns[0]} is not ({Inline}, {TextElement})', line=self.lineno)
                 return [], [msg]
             n = cast(TextElement, ns[0])
-            if len(n.children) != 1:
-                msg = reporter.error(f'node {n} should has exactly 1 child, but {len(n.children)} found', line=self.lineno)
+            if len(n) != 1:
+                msg = reporter.error(f'node {n} should has exactly 1 child, but {len(n)} found', line=self.lineno)
                 return [], [msg]
             if not isinstance(n[0], Text):
                 msg = reporter.error(f'child of node {n} should have Text, but {type(n[0])} found', line=self.lineno)
                 return [], [msg]
             nodes.append(n)
 
+        if len(nodes) == 0:
+            return [], [] # no node produced, return
 
-        # ref: https://stackoverflow.com/questions/44829580/composing-roles-in-restructuredtext
         if self.nested_parse:
+            # See also:
+            #
+            # - :ref:`nested-parse`
+            # - https://stackoverflow.com/questions/44829580/composing-roles-in-restructuredtext
+            inliner = self.inliner
             memo = states.Struct(
-                document=self.inliner.document, # type: ignore[attr-defined] 
-                reporter=reporter, 
-                language=self.inliner.language) # type: ignore[attr-defined] 
+                document=inliner.document, # type: ignore[attr-defined]
+                reporter=inliner.reporter, # type: ignore[attr-defined]
+                language=inliner.language) # type: ignore[attr-defined]
+            n, msgs = inliner.parse(self.text, self.lineno, memo, nodes[-1]) # type: ignore[attr-defined]
+            if len(msgs) != 0:
+                return [], msgs
+            nodes[-1].replace(nodes[-1][0], n) # replace the Text node
 
-            n, sysmsgs = self.inliner.parse(self.text, self.lineno, memo, nodes[-1]) # type: ignore[attr-defined] 
-            if len(sysmsgs) != 0:
-                return [], sysmsgs
-            nodes[-1].replace(nodes[-1][0], n)
-
-        # Composite all nodes together.
+        # Composite all nodes together, for examle:
+        #
+        # before::
+        #
+        #   <strong>
+        #       <text>
+        #   <literal>
+        #       <text>
+        #
+        # after::
+        #
+        #   <strong>
+        #       <literal>
+        #            <text>
         for i in range(0, len(nodes) -1):
-            nodes[i].replace(nodes[i][0], nodes[i+1])
+            nodes[i].replace(nodes[i][0], nodes[i+1]) # replace the Text node with the inner(i+1) TextElement
 
         return [nodes[0]], []
+
 
 def _config_inited(app:Sphinx, config:Config) -> None:
     for name, cfg in config.comboroles_roles.items():
@@ -88,7 +110,7 @@ def _config_inited(app:Sphinx, config:Config) -> None:
             rolenames = cfg[0]
             nested_parse = cfg[1]
         app.add_role(name, CompositeRole(rolenames, nested_parse))
-        
+
 
 def setup(app:Sphinx):
     """Sphinx extension entrypoint."""

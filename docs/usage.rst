@@ -22,10 +22,9 @@ Users can create composite roles by adding an item to configuration item
 
 The above configuration creates a composite role ``strong_literal``,
 and consists of two existing roles :parsed_literal:`strong_` and
-:parsed_literal:`literal_`. so the `Interpreted Text`_ of ``literal``
+:parsed_literal:`literal_`. The `Interpreted Text`_ of ``strong_literal``
 (in this case, it is "bold code") will be interpreted first by role ``literal``
-and then by ``strong`` (from the inside out). In pseudo reStructuredText, it looks
-like:
+and then by ``strong``. In pseudo reStructuredText, it looks like:
 
 .. code:: rst
 

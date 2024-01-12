@@ -10,33 +10,40 @@ from docutils.parsers.rst import states
 if TYPE_CHECKING:
     from sphinx.application import Sphinx
     from sphinx.config import Config
-    from sphinx.util.typing import RoleFunction
 
 __version__ = '0.1.0'
 
 class CompositeRole(SphinxRole):
-    #: Roles to be composited
-    components: list[RoleFunction]
+    #: Rolenames to be composited
+    rolenames: list[str]
+    #: Whether to enable :ref:`nested-parse`
     nested_parse: bool
 
+
     def __init__(self, rolenames: list[str], nested_parse: bool):
-        self.components = []
-        for r in rolenames:
-            if r in roles._roles: # type: ignore[attr-defined]
-                self.components.append(roles._roles[r]) # type: ignore[attr-defined]
-            elif r in roles._role_registry: # type: ignore[attr-defined]
-                self.components.append(roles._role_registry[r]) # type: ignore[attr-defined]
-            else:
-                raise KeyError(f'no such role: {r}')
+        self.rolenames = rolenames
         self.nested_parse = nested_parse
 
 
     def run(self) -> tuple[list[Node], list[system_message]]:
         nodes: list[TextElement] = []
+        reporter = self.inliner.reporter # type: ignore[attr-defined]
+
+        # Lookup RoleFunction by name.
+        # NOTE: We can not do this during __init__, some roles created by
+        # 3rd-party extension do not exist yet at that time.
+        components = []
+        for r in self.rolenames:
+            if r in roles._roles: # type: ignore[attr-defined]
+                components.append(roles._roles[r]) # type: ignore[attr-defined]
+            elif r in roles._role_registry: # type: ignore[attr-defined]
+                components.append(roles._role_registry[r]) # type: ignore[attr-defined]
+            else:
+                msg = reporter.error(f'no such role: {r}', line=self.lineno)
+                return [], [msg]
 
         # Run all RoleFunction, collect the produced nodes.
-        for comp in self.components:
-            reporter = self.inliner.reporter # type: ignore[attr-defined]
+        for comp in components:
             ns, msgs = comp(self.name, self.rawtext, self.text, self.lineno, self.inliner, self.options, self.content)
 
             # The returned nodes should be exactly one TextElement and contains

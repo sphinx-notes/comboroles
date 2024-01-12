@@ -89,6 +89,42 @@ be parsed too:
 
 .. note:: For nested roles, note that the backquote ````` needs to be escaped.
 
+Works with other Extensions
+===========================
+
+The extensions can also work with roles provided by the some other extensions
+(not all, see :ref:`limitation`).
+
+``sphinx.ext.extlink``
+----------------------
+
+:parsed_literal:`sphinx.ext.extlink_` is a Sphinx builtin extension to create
+shorten external links.
+
+Assume that we have the following configuration, extlink creates the ``issue`` role,
+then comboroles creates a ``literal_issue`` role based on it:
+
+.. code:: python
+
+   extlinks = {
+       'issue': ('https://github.com/sphinx-notes/comboroles/issues/%s', '💬%s'),
+   }
+
+   comboroles_roles = {
+       'literal_issue': ['literal', 'issue'],
+   }
+
+========================== ====================
+``:issue:`new```           :issue:`new`
+``:literal_issue:`new````  :literal_issue:`new`
+========================== ====================
+
+.. seealso:: https://github.com/sphinx-doc/sphinx/issues/11745
+
+.. _sphinx.ext.extlinks: https://www.sphinx-doc.org/en/master/usage/extensions/extlinks.html
+
+.. _limitation:
+
 Limitation
 ==========
 

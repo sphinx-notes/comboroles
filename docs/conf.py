@@ -143,6 +143,7 @@ comboroles_roles = {
     'plain_literal': (['literal'], False),
     'parsed_literal': (['literal'], True),
     'parsed_emphasis': (['emphasis'], True),
+    'literal_issue': ['literal', 'issue'],
 }
 
 # DOG FOOD CONFIGURATION END

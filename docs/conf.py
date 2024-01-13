@@ -144,7 +144,10 @@ comboroles_roles = {
     'parsed_literal': (['literal'], True),
     'parsed_emphasis': (['emphasis'], True),
     'literal_issue': ['literal', 'issue'],
+    'literal_strike': ['literal', 'strike'],
 }
+
+extensions.append('sphinxnotes.strike')
 
 # DOG FOOD CONFIGURATION END
 # 

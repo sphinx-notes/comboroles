@@ -145,6 +145,8 @@ comboroles_roles = {
     'parsed_emphasis': (['emphasis'], True),
     'literal_issue': ['literal', 'issue'],
     'literal_strike': ['literal', 'strike'],
+    'literal_ref': ['literal', 'ref'],
+    'literal_doc': ['literal', 'doc'],
 }
 
 extensions.append('sphinxnotes.strike')

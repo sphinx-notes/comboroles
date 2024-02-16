@@ -10,6 +10,7 @@ from docutils.parsers.rst import states
 if TYPE_CHECKING:
     from sphinx.application import Sphinx
     from sphinx.config import Config
+    from sphinx.util.typing import RoleFunction
 
 __version__ = '0.1.0'
 
@@ -29,22 +30,19 @@ class CompositeRole(SphinxRole):
         nodes: list[TextElement] = []
         reporter = self.inliner.reporter # type: ignore[attr-defined]
 
-        # Lookup RoleFunction by name.
         # NOTE: We can not do this during __init__, some roles created by
         # 3rd-party extension do not exist yet at that time.
-        components = []
+        rolefns = []
         for r in self.rolenames:
-            if r in roles._roles: # type: ignore[attr-defined]
-                components.append(roles._roles[r]) # type: ignore[attr-defined]
-            elif r in roles._role_registry: # type: ignore[attr-defined]
-                components.append(roles._role_registry[r]) # type: ignore[attr-defined]
-            else:
+            rolefn = self.lookup_role(r)
+            if rolefn is None:
                 msg = reporter.error(f'no such role: {r}', line=self.lineno)
                 return [], [msg]
+            rolefns.append(rolefn)
 
         # Run all RoleFunction, collect the produced nodes.
-        for comp in components:
-            ns, msgs = comp(self.name, self.rawtext, self.text, self.lineno, self.inliner, self.options, self.content)
+        for rolefn in rolefns:
+            ns, msgs = rolefn(self.name, self.rawtext, self.text, self.lineno, self.inliner, self.options, self.content)
 
             # The returned nodes should be exactly one TextElement and contains
             # exactly one Text node as child, like this::
@@ -106,6 +104,15 @@ class CompositeRole(SphinxRole):
             nodes[i].replace(nodes[i][0], nodes[i+1]) # replace the Text node with the inner(i+1) TextElement
 
         return [nodes[0]], []
+
+
+    def lookup_role(self, name:str) -> RoleFunction|None:
+        """Lookup RoleFunction by name."""
+        if name in roles._roles: # type: ignore[attr-defined]
+            return roles._roles[name] # type: ignore[attr-defined]
+        if name in roles._role_registry: # type: ignore[attr-defined]
+            return roles._role_registry[name] # type: ignore[attr-defined]
+        return None
 
 
 def _config_inited(app:Sphinx, config:Config) -> None:

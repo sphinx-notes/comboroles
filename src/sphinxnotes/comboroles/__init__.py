@@ -138,7 +138,7 @@ class CompositeRole(SphinxRole):
         # Lookup in Sphinx's std domain.
         std = self.env.get_domain('std')
         if name in std.roles:
-            return RoleMetaInfo(name=name, fn=std.roles[name]) # type: ignore[attr-defined]
+            return RoleMetaInfo(name='std:'+name, fn=std.roles[name]) # type: ignore[attr-defined]
 
         return None
 

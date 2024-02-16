@@ -87,6 +87,7 @@ Contents
    :caption: Contents
 
    usage
+   examples
    conf
    changelog
 

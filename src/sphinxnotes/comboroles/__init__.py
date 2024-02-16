@@ -1,5 +1,6 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, cast
+from dataclasses import dataclass
 
 from sphinx.util.docutils import SphinxRole
 
@@ -14,6 +15,14 @@ if TYPE_CHECKING:
 
 __version__ = '0.1.0'
 
+
+@dataclass
+class RoleMetaInfo(object):
+    """Metainfo used to assist role composition."""
+    name: str
+    fn: RoleFunction
+
+
 class CompositeRole(SphinxRole):
     #: Rolenames to be composited
     rolenames: list[str]
@@ -27,51 +36,55 @@ class CompositeRole(SphinxRole):
 
 
     def run(self) -> tuple[list[Node], list[system_message]]:
-        nodes: list[TextElement] = []
         reporter = self.inliner.reporter # type: ignore[attr-defined]
 
-        # NOTE: We can not do this during __init__, some roles created by
+        # NOTE: We should NOT lookup roles during __init__, some roles created by
         # 3rd-party extension do not exist yet at that time.
-        rolefns = []
-        for r in self.rolenames:
-            rolefn = self.lookup_role(r)
-            if rolefn is None:
-                msg = reporter.error(f'no such role: {r}', line=self.lineno)
+        roles = []
+        for name in self.rolenames:
+            role = self.lookup_role(name)
+            if role is None:
+                msg = reporter.error(f'no such role: {name}', line=self.lineno)
                 return [], [msg]
-            rolefns.append(rolefn)
+            roles.append(role)
 
-        # Run all RoleFunction, collect the produced nodes.
-        for rolefn in rolefns:
-            ns, msgs = rolefn(self.name, self.rawtext, self.text, self.lineno, self.inliner, self.options, self.content)
+        # Run all RoleFunction, collect the produced nodes:
+        #
+        # - the innermost element `contnode` can be an Inline or TextElement,
+        # - allother elements `wrapnodes` MUST be TextElement.
+        wrapnodes: list[TextElement] = []
+        contnode: TextElement|Inline|None = None
+        for i, role in enumerate(roles):
 
-            # The returned nodes should be exactly one TextElement and contains
-            # exactly one Text node as child, like this::
-            #
-            #   <TextElement>
-            #       <Text>
-            #
-            # So that it can be used as part of composite roles.
+            ns, msgs = role.fn(role.name, self.rawtext, self.text, self.lineno, self.inliner, self.options, self.content)
             if len(msgs) != 0:
                 return [], msgs # once system_message is thrown, return
             if len(ns) != 1:
                 msg = reporter.error(f'role should returns exactly 1 node, but {len(ns)} found: {ns}', line=self.lineno)
                 return [], [msg]
-            if not isinstance(ns[0], (Inline, TextElement)):
-                msg = reporter.error(f'node {ns[0]} is not ({Inline}, {TextElement})', line=self.lineno)
-                return [], [msg]
-            n = cast(TextElement, ns[0])
-            if len(n) != 1:
-                msg = reporter.error(f'node {n} should has exactly 1 child, but {len(n)} found', line=self.lineno)
-                return [], [msg]
-            if not isinstance(n[0], Text):
-                msg = reporter.error(f'child of node {n} should have Text, but {type(n[0])} found', line=self.lineno)
-                return [], [msg]
-            nodes.append(n)
+            n = ns[0]
 
-        if len(nodes) == 0:
+            # So that it can be used as part of composite roles.
+            innermost = i == len(roles) - 1
+            classes = (Inline, TextElement) if innermost else TextElement
+            if not isinstance(n, classes):
+                msg = reporter.error(f'node {n} is not {classes}', line=self.lineno)
+                return [], [msg]
+
+            if innermost:
+                contnode = n
+            else:
+                wrapnodes.append(cast(TextElement, n))
+
+        if contnode is None:
             return [], [] # no node produced, return
 
         if self.nested_parse:
+            if not isinstance(contnode, TextElement):
+                msg = reporter.error(f'can not do nested parse because node {contnode} is not {TextElement}', line=self.lineno)
+                return [], [msg]
+            contnode = cast(TextElement, contnode)
+
             # See also:
             #
             # - :ref:`nested-parse`
@@ -81,37 +94,52 @@ class CompositeRole(SphinxRole):
                 document=inliner.document, # type: ignore[attr-defined]
                 reporter=inliner.reporter, # type: ignore[attr-defined]
                 language=inliner.language) # type: ignore[attr-defined]
-            n, msgs = inliner.parse(self.text, self.lineno, memo, nodes[-1]) # type: ignore[attr-defined]
+            n, msgs = inliner.parse(self.text, self.lineno, memo, wrapnodes) # type: ignore[attr-defined]
             if len(msgs) != 0:
                 return [], msgs
-            nodes[-1].replace(nodes[-1][0], n) # replace the Text node
+            contnode.replace(contnode[0], n) # replace the Text node
 
+
+            
         # Composite all nodes together, for examle:
         #
         # before::
         #
-        #   <strong>
+        #   <strong> # wrapnodes[0]
         #       <text>
-        #   <literal>
+        #   <literal> # wrapnodes[1]
+        #       <text>
+        #   <pending_xref> # contnode
         #       <text>
         #
         # after::
         #
         #   <strong>
         #       <literal>
-        #            <text>
-        for i in range(0, len(nodes) -1):
-            nodes[i].replace(nodes[i][0], nodes[i+1]) # replace the Text node with the inner(i+1) TextElement
+        #           <pending_xref>
+        #              <text>
+        allnodes = wrapnodes + [contnode] # must not empty
+        for i in range(0, len(allnodes)-1):
+            # replace the Text node with the inner(i+1) TextElement
+            allnodes[i].replace(allnodes[i][0], allnodes[i+1])
 
-        return [nodes[0]], []
+        return [allnodes[0]], []
 
 
-    def lookup_role(self, name:str) -> RoleFunction|None:
+    def lookup_role(self, name:str) -> RoleMetaInfo|None:
         """Lookup RoleFunction by name."""
+
+        # Lookup in docutils' regsitry.
         if name in roles._roles: # type: ignore[attr-defined]
-            return roles._roles[name] # type: ignore[attr-defined]
+            return RoleMetaInfo(name=name, fn=roles._roles[name]) # type: ignore[attr-defined]
         if name in roles._role_registry: # type: ignore[attr-defined]
-            return roles._role_registry[name] # type: ignore[attr-defined]
+            return RoleMetaInfo(name=name, fn=roles._role_registry[name]) # type: ignore[attr-defined]
+
+        # Lookup in Sphinx's std domain.
+        std = self.env.get_domain('std')
+        if name in std.roles:
+            return RoleMetaInfo(name=name, fn=std.roles[name]) # type: ignore[attr-defined]
+
         return None
 
 

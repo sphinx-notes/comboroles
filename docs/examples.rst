@@ -37,6 +37,20 @@ Cross references: ``:ref:``, ``:doc:`` and more…
 ``:literal_doc:`changelog```       :literal_doc:`changelog`
 ================================== ==============================
 
+The "python" Domain
+===================
+
+.. code:: python
+
+   comboroles_roles = {
+      'strong_pycls': ['strong', 'py:class'],
+   }
+
+======================= ===================
+``:py:class:`str```     :py:class:`str`
+``:strong_pycls:`str``` :strong_pycls:`str`
+======================= ===================
+
 Works with other Extensions
 ===========================
 
@@ -86,4 +100,3 @@ then comboroles creates a ``literal_issue`` role based on it:
 =========================== ======================
 
 .. _sphinxnotes-strike: https://sphinx.silverrainz.me/strike/
-

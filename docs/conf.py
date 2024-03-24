@@ -139,17 +139,28 @@ extensions.append('comboroles')
 # DOG FOOD CONFIGURATION START
 
 comboroles_roles = {
+    # bulitin.
     'strong_literal': ['strong', 'literal'],
     'plain_literal': (['literal'], False),
     'parsed_literal': (['literal'], True),
     'parsed_emphasis': (['emphasis'], True),
+
+    # extensions.
     'literal_issue': ['literal', 'issue'],
     'literal_strike': ['literal', 'strike'],
+
+    # domains.
     'literal_ref': ['literal', 'ref'],
     'literal_doc': ['literal', 'doc'],
+    'strong_pycls': ['strong', 'py:class'],
 }
 
 extensions.append('sphinxnotes.strike')
+
+extensions.append('sphinx.ext.intersphinx')
+
+# For role strong_pycls.
+intersphinx_mapping = {'python': ('https://docs.python.org/3', None)}
 
 # DOG FOOD CONFIGURATION END
 # 

@@ -2,7 +2,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, cast
 from dataclasses import dataclass
 
+from sphinx.util import logging
 from sphinx.util.docutils import SphinxRole
+from sphinx.errors import ExtensionError
 
 from docutils.nodes import Node, Inline, TextElement, Text, system_message
 from docutils.parsers.rst import roles
@@ -15,6 +17,7 @@ if TYPE_CHECKING:
 
 __version__ = '0.1.0'
 
+logger = logging.getLogger(__name__)
 
 @dataclass
 class RoleMetaInfo(object):
@@ -135,10 +138,23 @@ class CompositeRole(SphinxRole):
         if name in roles._role_registry: # type: ignore[attr-defined]
             return RoleMetaInfo(name=name, fn=roles._role_registry[name]) # type: ignore[attr-defined]
 
-        # Lookup in Sphinx's std domain.
-        std = self.env.get_domain('std')
-        if name in std.roles:
-            return RoleMetaInfo(name='std:'+name, fn=std.roles[name]) # type: ignore[attr-defined]
+        # Lookup up in domain's regsitry.
+        domains = []
+        if ':' in name: # explicit domain name
+            dname, name = name.split(':', maxsplit=1)
+            domains.append(dname)
+        else: # implicit, try primary_domain and std domain in order
+            if self.config.primary_domain and self.config.primary_domain != '':
+                domains.append(self.config.primary_domain)
+            domains.append('std')
+        for domain_name in domains:
+            try:
+                domain = self.env.get_domain(domain_name)
+            except ExtensionError as e:
+                logger.warn(f'failed to get domain: {e}')
+                return None
+            if name in domain.roles:
+                return RoleMetaInfo(name=f'{domain_name}:{name}', fn=domain.roles[name])
 
         return None
 

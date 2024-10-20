@@ -6,7 +6,7 @@ from sphinx.util import logging
 from sphinx.util.docutils import SphinxRole
 from sphinx.errors import ExtensionError
 
-from docutils.nodes import Node, Inline, TextElement, Text, system_message
+from docutils.nodes import Node, Inline, TextElement, system_message
 from docutils.parsers.rst import roles
 from docutils.parsers.rst import states
 
@@ -19,9 +19,11 @@ __version__ = '0.1.0'
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class RoleMetaInfo(object):
     """Metainfo used to assist role composition."""
+
     name: str
     fn: RoleFunction
 
@@ -32,14 +34,12 @@ class CompositeRole(SphinxRole):
     #: Whether to enable :ref:`nested-parse`
     nested_parse: bool
 
-
     def __init__(self, rolenames: list[str], nested_parse: bool):
         self.rolenames = rolenames
         self.nested_parse = nested_parse
 
-
     def run(self) -> tuple[list[Node], list[system_message]]:
-        reporter = self.inliner.reporter # type: ignore[attr-defined]
+        reporter = self.inliner.reporter  # type: ignore[attr-defined]
 
         # NOTE: We should NOT lookup roles during __init__, some roles created by
         # 3rd-party extension do not exist yet at that time.
@@ -56,14 +56,24 @@ class CompositeRole(SphinxRole):
         # - the innermost element `contnode` can be an Inline or TextElement,
         # - allother elements `wrapnodes` MUST be TextElement.
         wrapnodes: list[TextElement] = []
-        contnode: TextElement|Inline|None = None
+        contnode: TextElement | Inline | None = None
         for i, role in enumerate(roles):
-
-            ns, msgs = role.fn(role.name, self.rawtext, self.text, self.lineno, self.inliner, self.options, self.content)
+            ns, msgs = role.fn(
+                role.name,
+                self.rawtext,
+                self.text,
+                self.lineno,
+                self.inliner,
+                self.options,
+                self.content,
+            )
             if len(msgs) != 0:
-                return [], msgs # once system_message is thrown, return
+                return [], msgs  # once system_message is thrown, return
             if len(ns) != 1:
-                msg = reporter.error(f'role should returns exactly 1 node, but {len(ns)} found: {ns}', line=self.lineno)
+                msg = reporter.error(
+                    f'role should returns exactly 1 node, but {len(ns)} found: {ns}',
+                    line=self.lineno,
+                )
                 return [], [msg]
             n = ns[0]
 
@@ -80,11 +90,14 @@ class CompositeRole(SphinxRole):
                 wrapnodes.append(cast(TextElement, n))
 
         if contnode is None:
-            return [], [] # no node produced, return
+            return [], []  # no node produced, return
 
         if self.nested_parse:
             if not isinstance(contnode, TextElement):
-                msg = reporter.error(f'can not do nested parse because node {contnode} is not {TextElement}', line=self.lineno)
+                msg = reporter.error(
+                    f'can not do nested parse because node {contnode} is not {TextElement}',
+                    line=self.lineno,
+                )
                 return [], [msg]
             contnode = cast(TextElement, contnode)
 
@@ -94,16 +107,15 @@ class CompositeRole(SphinxRole):
             # - https://stackoverflow.com/questions/44829580/composing-roles-in-restructuredtext
             inliner = self.inliner
             memo = states.Struct(
-                document=inliner.document, # type: ignore[attr-defined]
-                reporter=inliner.reporter, # type: ignore[attr-defined]
-                language=inliner.language) # type: ignore[attr-defined]
-            n, msgs = inliner.parse(self.text, self.lineno, memo, wrapnodes) # type: ignore[attr-defined]
+                document=inliner.document,  # type: ignore[attr-defined]
+                reporter=inliner.reporter,  # type: ignore[attr-defined]
+                language=inliner.language,
+            )  # type: ignore[attr-defined]
+            n, msgs = inliner.parse(self.text, self.lineno, memo, wrapnodes)  # type: ignore[attr-defined]
             if len(msgs) != 0:
                 return [], msgs
-            contnode.replace(contnode[0], n) # replace the Text node
+            contnode.replace(contnode[0], n)  # replace the Text node
 
-
-            
         # Composite all nodes together, for examle:
         #
         # before::
@@ -121,29 +133,28 @@ class CompositeRole(SphinxRole):
         #       <literal>
         #           <pending_xref>
         #              <text>
-        allnodes = wrapnodes + [contnode] # must not empty
-        for i in range(0, len(allnodes)-1):
+        allnodes = wrapnodes + [contnode]  # must not empty
+        for i in range(0, len(allnodes) - 1):
             # replace the Text node with the inner(i+1) TextElement
-            allnodes[i].replace(allnodes[i][0], allnodes[i+1])
+            allnodes[i].replace(allnodes[i][0], allnodes[i + 1])
 
         return [allnodes[0]], []
 
-
-    def lookup_role(self, name:str) -> RoleMetaInfo|None:
+    def lookup_role(self, name: str) -> RoleMetaInfo | None:
         """Lookup RoleFunction by name."""
 
         # Lookup in docutils' regsitry.
-        if name in roles._roles: # type: ignore[attr-defined]
-            return RoleMetaInfo(name=name, fn=roles._roles[name]) # type: ignore[attr-defined]
-        if name in roles._role_registry: # type: ignore[attr-defined]
-            return RoleMetaInfo(name=name, fn=roles._role_registry[name]) # type: ignore[attr-defined]
+        if name in roles._roles:  # type: ignore[attr-defined]
+            return RoleMetaInfo(name=name, fn=roles._roles[name])  # type: ignore[attr-defined]
+        if name in roles._role_registry:  # type: ignore[attr-defined]
+            return RoleMetaInfo(name=name, fn=roles._role_registry[name])  # type: ignore[attr-defined]
 
         # Lookup up in domain's regsitry.
         domains = []
-        if ':' in name: # explicit domain name
+        if ':' in name:  # explicit domain name
             dname, name = name.split(':', maxsplit=1)
             domains.append(dname)
-        else: # implicit, try primary_domain and std domain in order
+        else:  # implicit, try primary_domain and std domain in order
             if self.config.primary_domain and self.config.primary_domain != '':
                 domains.append(self.config.primary_domain)
             domains.append('std')
@@ -159,7 +170,7 @@ class CompositeRole(SphinxRole):
         return None
 
 
-def _config_inited(app:Sphinx, config:Config) -> None:
+def _config_inited(app: Sphinx, config: Config) -> None:
     for name, cfg in config.comboroles_roles.items():
         if isinstance(cfg, list):
             rolenames = cfg
@@ -170,15 +181,20 @@ def _config_inited(app:Sphinx, config:Config) -> None:
         app.add_role(name, CompositeRole(rolenames, nested_parse))
 
 
-def setup(app:Sphinx):
+def setup(app: Sphinx):
     """Sphinx extension entrypoint."""
 
     app.connect('config-inited', _config_inited)
 
-    app.add_config_value('comboroles_roles', {}, 'env', types=dict[str, list[str] | tuple[list[str],bool]])
+    app.add_config_value(
+        'comboroles_roles',
+        {},
+        'env',
+        types=dict[str, list[str] | tuple[list[str], bool]],
+    )
 
     return {
-        "version": __version__,
-        "parallel_read_safe": True,
-        "parallel_write_safe": True,
+        'version': __version__,
+        'parallel_read_safe': True,
+        'parallel_write_safe': True,
     }

@@ -38,6 +38,8 @@ dev = [
     "build",
     "twine",
     "cruft",
+    "ruff",
+    "pre-commit"
 ]
 test = [
     "pytest",

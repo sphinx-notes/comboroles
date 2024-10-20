@@ -5,26 +5,31 @@
 sphinxnotes-comboroles
 ======================
 
-.. image:: https://img.shields.io/github/actions/workflow/status/sphinx-notes/comboroles/pages.yml
+.. |docs| image:: https://img.shields.io/github/deployments/sphinx-notes/comboroles/github-pages
    :target: https://sphinx.silverrainz.me/comboroles
    :alt: Documentation Status
 
-.. image:: https://img.shields.io/github/license/sphinx-notes/comboroles
-   :target: https://github.com/sphinx-notes/comboroles/LICENSE
+.. |license| image:: https://img.shields.io/github/license/sphinx-notes/comboroles
+   :target: https://github.com/sphinx-notes/comboroles/blob/master/LICENSE
    :alt: Open Source License
 
-.. image:: https://img.shields.io/pypi/v/sphinxnotes-comboroles.svg
+.. |pypi| image:: https://img.shields.io/pypi/v/sphinxnotes-comboroles.svg
    :target: https://pypi.python.org/pypi/sphinxnotes-comboroles
    :alt: PyPI Package
 
-.. image:: https://img.shields.io/pypi/dm/sphinxnotes-comboroles
+.. |download| image:: https://img.shields.io/pypi/dm/sphinxnotes-comboroles
    :target: https://pypi.python.org/pypi/sphinxnotes-comboroles
    :alt: PyPI Package Downloads
 
+|docs| |license| |pypi| |download|
+
 Sphinx extension for composing multiple roles.
 
-* Documentation: https://sphinx.silverrainz.me/comboroles
-* Source: https://github.com/sphinx-notes/comboroles
-* Changelog: https://sphinx.silverrainz.me/comboroles/changelog.html
-* Tracker: https://github.com/sphinx-notes/comboroles/issues
-* Download: https://pypi.org/project/sphinxnotes-comboroles/#files
+.. INTRODUCTION START 
+   (MUST written in standard reStructuredText, without Sphinx stuff)
+
+.. INTRODUCTION END
+
+Please refer to Documentation_ for more details.
+
+.. _Documentation: https://sphinx.silverrainz.me/comboroles

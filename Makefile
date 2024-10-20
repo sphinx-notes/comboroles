@@ -6,11 +6,27 @@ LANG = en_US.UTF-8
 MAKE  = make
 PY    = python3
 RM    = rm -rf
+GIT   = git
+OPEN  = xdg-open
 
 # Build sphinx documentation.
 .PHONY: docs
 docs:
 	$(MAKE) -C docs/
+
+# View sphinx HTML documentation in browser.
+.PHONY: view
+view:
+	$(OPEN) docs/_build/html/index.html
+
+.PHONY: clean
+clean:
+	$(MAKE) -C docs/ clean | true
+	$(RM) dist/ | true
+
+.PHONY: clean
+fmt:
+	ruff format src/
 
 # Run unittest.
 .PHONY: test
@@ -19,8 +35,7 @@ test:
 
 # Build distribution package, for "install" or "upload".
 .PHONY: dist
-dist: pyproject.toml
-	$(RM) dist/ # clean up old dist
+dist: pyproject.toml clean
 	$(PY) -m build
 
 # Install distribution package to user directory.
@@ -51,8 +66,16 @@ upload-test: dist
 update-template:
 	$(PY) -m cruft update
 
+.PHONY: update-template-done
+update-template-done:
+	$(GIT) commit -m "chore: Update project template to sphinx-notes/cookiecutter@$(shell jq -r '.commit' .cruft.json | head -c8)"
+
 # Update project version.
 .PHONY: bump-version
 bump-version:
 	@echo -n "Please enter the version to bump: "
 	@read version && $(PY) -m cruft update --variables-to-update "{ \"version\" : \"$$version\" }"
+
+# EXTRA TARGETS START
+
+# EXTRA TARGETS END

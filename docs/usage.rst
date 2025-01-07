@@ -70,10 +70,12 @@ role. For example:
        'parsed_literal': (['literal'], True),
    }
 
-=================================== =============================
-````**bold code**````               ``**bold code**``
-``:parsed_literal:`**bold code**``` :parsed_literal:`**bold code**`
-=================================== =============================
+========================================= =====================================
+````**bold code**````                     ``**bold code**``
+``:parsed_literal:`**bold code**```       :parsed_literal:`**bold code**`
+````https://example.com````               ``https://example.com``
+``:parsed_literal:`https://example.com``` :parsed_literal:`https://example.com`
+========================================= =====================================
 
 The above configuration creates a composite role `parsed_literal` with
 ``nested_parse`` enabled, so the text "\*\*bold code\**" can be parsed.
@@ -99,5 +101,3 @@ Due to internal implementation, the extension can only used to composite
 simple roles and may CRASH Sphinx when compositing complex roles.
 **DO NOT report to Sphinx first if it crashes**, please report to here :issue:`new`
 instead.
-
-n

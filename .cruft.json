@@ -1,6 +1,6 @@
 {
   "template": "https://github.com/sphinx-notes/cookiecutter",
-  "commit": "c4f14dab2840eeff6352647a923642b6377d1f49",
+  "commit": "7e07548aad55432b86d881ccdab66eb1c89986c0",
   "checkout": null,
   "context": {
     "cookiecutter": {
@@ -14,7 +14,8 @@
       "github_repo": "comboroles",
       "pypi_name": "sphinxnotes-comboroles",
       "pypi_owner": "SilverRainZ",
-      "_template": "https://github.com/sphinx-notes/cookiecutter"
+      "_template": "https://github.com/sphinx-notes/cookiecutter",
+      "_commit": "7e07548aad55432b86d881ccdab66eb1c89986c0"
     }
   },
   "directory": null

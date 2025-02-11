@@ -46,7 +46,7 @@ test = [
 ]
 docs = [
     "furo",
-    "sphinxnotes-any",
+    "sphinxnotes-project",
     "sphinx_design",
     "sphinx_copybutton",
     "sphinxcontrib-gtagjs",

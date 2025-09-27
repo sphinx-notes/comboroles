@@ -5,23 +5,23 @@
 sphinxnotes-comboroles
 ======================
 
-.. |docs| image:: https://img.shields.io/github/deployments/sphinx-notes/comboroles/github-pages
+.. |docs| image:: https://img.shields.io/github/deployments/sphinx-notes/comboroles/github-pages?label=docs
    :target: https://sphinx.silverrainz.me/comboroles
    :alt: Documentation Status
-
 .. |license| image:: https://img.shields.io/github/license/sphinx-notes/comboroles
    :target: https://github.com/sphinx-notes/comboroles/blob/master/LICENSE
    :alt: Open Source License
-
 .. |pypi| image:: https://img.shields.io/pypi/v/sphinxnotes-comboroles.svg
    :target: https://pypi.python.org/pypi/sphinxnotes-comboroles
    :alt: PyPI Package
-
 .. |download| image:: https://img.shields.io/pypi/dm/sphinxnotes-comboroles
    :target: https://pypi.python.org/pypi/sphinxnotes-comboroles
    :alt: PyPI Package Downloads
+.. |github| image:: https://img.shields.io/badge/GitHub-181717?style=flat&logo=github&logoColor=white/
+   :target: https://github.com/sphinx-notes/comboroles
+   :alt: GitHub Repository
 
-|docs| |license| |pypi| |download|
+|docs| |license| |pypi| |download| |github|
 
 .. _intro:
 
@@ -55,11 +55,13 @@ Getting Started
    We assume you already have a Sphinx documentation,
    if not, see `Getting Started with Sphinx`_.
 
+
 First, downloading extension from PyPI:
 
 .. code-block:: console
 
    $ pip install sphinxnotes-comboroles
+
 
 Then, add the extension name to ``extensions`` configuration item in your
 :parsed_literal:`conf.py_`:

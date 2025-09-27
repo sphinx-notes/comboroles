@@ -7,9 +7,6 @@
 # list see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
-import os
-import sys
-
 # -- Project information -----------------------------------------------------
 
 project = 'sphinxnotes-comboroles'
@@ -28,6 +25,7 @@ extensions = [
     'sphinx.ext.githubpages',
     'sphinx_design',
     'sphinx_copybutton',
+    'sphinx_last_updated_by_git',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -95,6 +93,15 @@ intersphinx_mapping = {
     'jinja': ('https://jinja.palletsprojects.com/en/latest/', None),
 }
 
+extensions.append('sphinx_sitemap')
+sitemap_filename = "sitemap.xml"
+sitemap_url_scheme = "{link}"
+
+extensions.append('sphinxext.opengraph')
+ogp_site_url = html_baseurl
+ogp_site_name = project
+ogp_image = html_baseurl + '/' + html_logo
+
 extensions.append('sphinxnotes.project')
 primary_domain = 'any'
 
@@ -103,10 +110,16 @@ primary_domain = 'any'
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
+import os
+import sys
 sys.path.insert(0, os.path.abspath('../src/sphinxnotes'))
 extensions.append('comboroles')
 
 # DOG FOOD CONFIGURATION START
+
+# DOG FOOD CONFIGURATION END
+
+# CUSTOM CONFIGURATION
 
 comboroles_roles = {
     # bulitin.
@@ -126,10 +139,3 @@ comboroles_roles = {
 }
 
 extensions.append('sphinxnotes.strike')
-
-extensions.append('sphinx.ext.intersphinx')
-
-# For role strong_pycls.
-intersphinx_mapping = {'python': ('https://docs.python.org/3', None)}
-
-# DOG FOOD CONFIGURATION END

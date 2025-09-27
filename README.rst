@@ -8,15 +8,12 @@ sphinxnotes-comboroles
 .. |docs| image:: https://img.shields.io/github/deployments/sphinx-notes/comboroles/github-pages
    :target: https://sphinx.silverrainz.me/comboroles
    :alt: Documentation Status
-
 .. |license| image:: https://img.shields.io/github/license/sphinx-notes/comboroles
    :target: https://github.com/sphinx-notes/comboroles/blob/master/LICENSE
    :alt: Open Source License
-
 .. |pypi| image:: https://img.shields.io/pypi/v/sphinxnotes-comboroles.svg
    :target: https://pypi.python.org/pypi/sphinxnotes-comboroles
    :alt: PyPI Package
-
 .. |download| image:: https://img.shields.io/pypi/dm/sphinxnotes-comboroles
    :target: https://pypi.python.org/pypi/sphinxnotes-comboroles
    :alt: PyPI Package Downloads

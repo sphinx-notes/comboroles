@@ -115,10 +115,6 @@ import sys
 sys.path.insert(0, os.path.abspath('../src/sphinxnotes'))
 extensions.append('comboroles')
 
-# DOG FOOD CONFIGURATION START
-
-# DOG FOOD CONFIGURATION END
-
 # CUSTOM CONFIGURATION
 
 comboroles_roles = {
